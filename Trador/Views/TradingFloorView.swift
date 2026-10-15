@@ -30,15 +30,15 @@ struct TradingFloorView: View {
                 .padding()
             }
             .background(Color(.systemGroupedBackground))
-            .navigationTitle("Trading Floor")
+            .navigationTitle("Salle de marché")
             .toolbar {
                 ToolbarItem(placement: .topBarTrailing) {
-                    Button("Reset") { confirmReset = true }
+                    Button("Réinitialiser") { confirmReset = true }
                 }
             }
-            .confirmationDialog("Reset your fake account to \(Fmt.money(MarketSim.startingCash))?",
+            .confirmationDialog("Remettre ton compte fictif à \(Fmt.money(MarketSim.startingCash)) ?",
                                 isPresented: $confirmReset, titleVisibility: .visible) {
-                Button("Reset account", role: .destructive) { market.resetAccount() }
+                Button("Réinitialiser le compte", role: .destructive) { market.resetAccount() }
             }
         }
         .onReceive(timer) { _ in
@@ -54,23 +54,23 @@ struct TradingFloorView: View {
         let change = total - MarketSim.startingCash
         return HStack {
             VStack(alignment: .leading, spacing: 4) {
-                Text("Account value")
+                Text("Valeur du compte")
                     .font(.caption)
                     .foregroundStyle(.secondary)
                 Text(Fmt.money(total))
                     .font(.title.bold().monospacedDigit())
-                Text("\(Fmt.signedMoney(change)) since start")
+                Text("\(Fmt.signedMoney(change)) depuis le début")
                     .font(.caption.monospacedDigit())
                     .foregroundStyle(change >= 0 ? Color.green : Color.red)
             }
             Spacer()
             VStack(alignment: .trailing, spacing: 4) {
-                Text("Cash")
+                Text("Liquidités")
                     .font(.caption)
                     .foregroundStyle(.secondary)
                 Text(Fmt.money(market.cash))
                     .font(.headline.monospacedDigit())
-                Text("Fake money only")
+                Text("Argent fictif")
                     .font(.caption2)
                     .foregroundStyle(.secondary)
             }
@@ -147,14 +147,14 @@ struct TradingFloorView: View {
                 Button {
                     playing.toggle()
                 } label: {
-                    Label(playing ? "Pause" : "Play", systemImage: playing ? "pause.fill" : "play.fill")
+                    Label(playing ? "Pause" : "Lecture", systemImage: playing ? "pause.fill" : "play.fill")
                 }
                 .buttonStyle(.borderedProminent)
 
                 Button {
                     market.advance()
                 } label: {
-                    Label("Next tick", systemImage: "forward.frame.fill")
+                    Label("Tick suivant", systemImage: "forward.frame.fill")
                 }
                 .buttonStyle(.bordered)
                 .disabled(playing)
@@ -164,7 +164,7 @@ struct TradingFloorView: View {
                 VStack(alignment: .trailing, spacing: 2) {
                     Text("Tick \(market.tick)")
                         .font(.caption.monospacedDigit())
-                    Text("Funding \(Fmt.rate(market.fundingRate)) in \(market.ticksToFunding)")
+                    Text("Funding \(Fmt.rate(market.fundingRate)) dans \(market.ticksToFunding)")
                         .font(.caption2.monospacedDigit())
                         .foregroundStyle(.secondary)
                 }
@@ -178,7 +178,7 @@ struct TradingFloorView: View {
 
     private var orderTicket: some View {
         VStack(alignment: .leading, spacing: 14) {
-            Text("New trade")
+            Text("Nouveau trade")
                 .font(.headline)
 
             Picker("Instrument", selection: $kind) {
@@ -192,14 +192,14 @@ struct TradingFloorView: View {
                 .fixedSize(horizontal: false, vertical: true)
 
             if kind == .future || kind == .perp {
-                Picker("Side", selection: $side) {
+                Picker("Sens", selection: $side) {
                     ForEach(Side.allCases) { Text($0.rawValue).tag($0) }
                 }
                 .pickerStyle(.segmented)
 
-                Text("Leverage")
+                Text("Effet de levier")
                     .font(.subheadline.bold())
-                Picker("Leverage", selection: $leverage) {
+                Picker("Levier", selection: $leverage) {
                     ForEach(leverageChoices, id: \.self) { Text("\(Int($0))x").tag($0) }
                 }
                 .pickerStyle(.segmented)
@@ -217,9 +217,9 @@ struct TradingFloorView: View {
                 .pickerStyle(.segmented)
             }
 
-            Text(kind == .spot || kind == .option ? "Amount to spend" : "Margin")
+            Text(kind == .spot || kind == .option ? "Montant à investir" : "Marge")
                 .font(.subheadline.bold())
-            Picker("Amount", selection: $amount) {
+            Picker("Montant", selection: $amount) {
                 ForEach(amountChoices, id: \.self) { Text(Fmt.money($0)).tag($0) }
             }
             .pickerStyle(.segmented)
@@ -245,9 +245,9 @@ struct TradingFloorView: View {
 
     private var openButtonTitle: String {
         switch kind {
-        case .spot: return "Buy TDC"
-        case .option: return "Buy \(optionType.rawValue)"
-        case .future, .perp: return "Open \(side.rawValue) \(Int(leverage))x"
+        case .spot: return "Acheter du TDC"
+        case .option: return "Acheter un \(optionType.rawValue)"
+        case .future, .perp: return "Ouvrir \(side.rawValue) x\(Int(leverage))"
         }
     }
 
@@ -256,28 +256,28 @@ struct TradingFloorView: View {
         VStack(alignment: .leading, spacing: 4) {
             switch kind {
             case .spot:
-                previewRow("You get", String(format: "%.3f TDC", amount / market.price))
-                previewRow("Max loss", Fmt.money(amount))
+                previewRow("Tu reçois", String(format: "%.3f TDC", amount / market.price))
+                previewRow("Perte max", Fmt.money(amount))
             case .option:
                 let strike = market.strike(for: optionType, choice: strikeChoice)
                 let premium = max(0.01, MarketSim.optionValue(type: optionType, spot: market.price,
                                                               strike: strike, ticksLeft: MarketSim.optionLife))
                 let breakeven = optionType == .call ? strike + premium : strike - premium
                 previewRow("Strike", Fmt.price(strike))
-                previewRow("Premium per TDC", Fmt.price(premium))
-                previewRow("Breakeven at expiry", Fmt.price(breakeven))
-                previewRow("Expires in", "\(MarketSim.optionLife) ticks")
-                previewRow("Max loss", Fmt.money(amount))
+                previewRow("Prime par TDC", Fmt.price(premium))
+                previewRow("Point mort à l'échéance", Fmt.price(breakeven))
+                previewRow("Échéance dans", "\(MarketSim.optionLife) ticks")
+                previewRow("Perte max", Fmt.money(amount))
             case .future, .perp:
                 let entry = kind == .future ? market.futurePrice(ticksLeft: MarketSim.futureLife) : market.price
                 let room = (1 - MarketSim.maintenanceRatio) / leverage
                 let liquidation = side == .long ? entry * (1 - room) : entry * (1 + room)
-                previewRow("Position size", Fmt.money(amount * leverage))
-                previewRow(kind == .future ? "Future price" : "Entry price", Fmt.price(entry))
+                previewRow("Taille de position", Fmt.money(amount * leverage))
+                previewRow(kind == .future ? "Prix du future" : "Prix d'entrée", Fmt.price(entry))
                 if kind == .future {
-                    previewRow("Basis vs spot", Fmt.price(entry - market.price))
+                    previewRow("Base vs spot", Fmt.price(entry - market.price))
                 }
-                previewRow("Liquidation near", Fmt.price(liquidation))
+                previewRow("Liquidation vers", Fmt.price(liquidation))
             }
         }
         .font(.footnote)
@@ -298,15 +298,15 @@ struct TradingFloorView: View {
     private var positionsCard: some View {
         VStack(alignment: .leading, spacing: 12) {
             HStack {
-                Text("Open positions")
+                Text("Positions ouvertes")
                     .font(.headline)
                 Spacer()
-                Text("Realized \(Fmt.signedMoney(market.realizedPnL))")
+                Text("Réalisé \(Fmt.signedMoney(market.realizedPnL))")
                     .font(.caption.monospacedDigit())
                     .foregroundStyle(market.realizedPnL >= 0 ? Color.green : Color.red)
             }
             if market.positions.isEmpty {
-                Text("No open trades. Pick an instrument above, open a trade, then press Play to watch the market move.")
+                Text("Aucune position. Choisis un instrument, ouvre un trade, puis appuie sur Lecture pour voir le marché bouger.")
                     .font(.footnote)
                     .foregroundStyle(.secondary)
             } else {
@@ -326,20 +326,20 @@ struct TradingFloorView: View {
 extension TradingFloorView {
     private var historyCard: some View {
         VStack(alignment: .leading, spacing: 12) {
-            Text("Trade history")
+            Text("Historique des trades")
                 .font(.headline)
             if market.closedTrades.isEmpty {
-                Text("Your closed trades show up here with their profit or loss.")
+                Text("Tes trades clôturés apparaissent ici avec leur gain ou leur perte.")
                     .font(.footnote)
                     .foregroundStyle(.secondary)
             } else {
                 HStack {
                     statBox("Trades", "\(market.closedTrades.count)")
-                    statBox("Win rate", String(format: "%.0f%%", market.winRate * 100))
-                    statBox("Win streak", "\(market.winStreak)")
+                    statBox("Réussite", String(format: "%.0f%%", market.winRate * 100))
+                    statBox("Série gagnante", "\(market.winStreak)")
                 }
                 if let best = market.bestTrade, best.pnl > 0 {
-                    Text("Best trade: \(best.title) \(Fmt.signedMoney(best.pnl))")
+                    Text("Meilleur trade : \(best.title) \(Fmt.signedMoney(best.pnl))")
                         .font(.caption.bold())
                         .foregroundStyle(Color.green)
                 }
@@ -401,8 +401,8 @@ struct PositionRow: View {
                     .foregroundStyle(profit >= 0 ? Color.green : Color.red)
             }
             HStack {
-                Text("Entry \(Fmt.price(position.entryPrice))")
-                Text("Now \(Fmt.price(market.markPrice(position)))")
+                Text("Entrée \(Fmt.price(position.entryPrice))")
+                Text("Actuel \(Fmt.price(market.markPrice(position)))")
                 Spacer()
                 Text(Fmt.percent(profit / position.margin))
             }
@@ -414,13 +414,13 @@ struct PositionRow: View {
                         .foregroundStyle(Color.red)
                 }
                 if let expiry = position.expiryTick {
-                    Text("Expires in \(max(0, expiry - market.tick)) ticks")
+                    Text("Échéance dans \(max(0, expiry - market.tick)) ticks")
                 }
                 if position.kind == .perp {
                     Text("Funding \(Fmt.signedMoney(-position.fundingPaid))")
                 }
                 Spacer()
-                Button("Close") {
+                Button("Clôturer") {
                     market.close(position.id)
                 }
                 .buttonStyle(.bordered)

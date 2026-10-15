@@ -1,5 +1,7 @@
 # Trador
 
+App entièrement en français, avec des graphiques interactifs dans les leçons (diagrammes de gains des options, levier et liquidation, funding, convergence des futures, valeur temps, carnet d'ordres, frise historique).
+
 A beginner friendly iOS game to learn trading, options, futures, perpetuals (perps) and derivatives.
 
 ## What is inside

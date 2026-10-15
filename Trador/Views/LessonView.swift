@@ -61,41 +61,74 @@ struct LessonView: View {
 
     private var cardView: some View {
         let card = lesson.cards[cardIndex]
-        return VStack(spacing: 24) {
+        return VStack(spacing: 16) {
             ScrollView {
-                VStack(spacing: 24) {
-                    Image(systemName: card.icon)
-                        .font(.system(size: 64))
-                        .foregroundStyle(color)
-                        .padding(.top, 40)
-                    Text(card.title)
-                        .font(.title2.bold())
-                        .multilineTextAlignment(.center)
+                VStack(alignment: .leading, spacing: 16) {
+                    HStack(spacing: 12) {
+                        Image(systemName: card.icon)
+                            .font(.title)
+                            .foregroundStyle(.white)
+                            .frame(width: 52, height: 52)
+                            .background(RoundedRectangle(cornerRadius: 14).fill(color.gradient))
+                        Text(card.title)
+                            .font(.title2.bold())
+                            .fixedSize(horizontal: false, vertical: true)
+                    }
+                    if let visual = card.visual {
+                        LessonVisualView(visual: visual, color: color)
+                    }
                     Text(card.text)
-                        .font(.title3)
-                        .multilineTextAlignment(.center)
-                        .foregroundStyle(.secondary)
-                }
-                .frame(maxWidth: .infinity)
-            }
-            Button {
-                withAnimation {
-                    if cardIndex + 1 < lesson.cards.count {
-                        cardIndex += 1
-                    } else {
-                        phase = .quiz
+                        .font(.body)
+                        .fixedSize(horizontal: false, vertical: true)
+                    if let example = card.example {
+                        VStack(alignment: .leading, spacing: 6) {
+                            Label("Exemple", systemImage: "lightbulb.fill")
+                                .font(.caption.bold())
+                                .foregroundStyle(color)
+                            Text(example)
+                                .font(.callout)
+                                .fixedSize(horizontal: false, vertical: true)
+                        }
+                        .padding()
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                        .background(RoundedRectangle(cornerRadius: 14).fill(color.opacity(0.12)))
                     }
                 }
-            } label: {
-                Text(cardIndex + 1 < lesson.cards.count ? "Next" : "Start quiz")
-                    .font(.headline)
-                    .frame(maxWidth: .infinity)
+                .frame(maxWidth: .infinity, alignment: .leading)
             }
-            .buttonStyle(.borderedProminent)
-            .controlSize(.large)
-            .tint(color)
+            HStack(spacing: 12) {
+                if cardIndex > 0 {
+                    Button {
+                        withAnimation { cardIndex -= 1 }
+                    } label: {
+                        Image(systemName: "chevron.left")
+                            .font(.headline)
+                            .frame(width: 44)
+                    }
+                    .buttonStyle(.bordered)
+                    .controlSize(.large)
+                    .tint(color)
+                }
+                Button {
+                    withAnimation {
+                        if cardIndex + 1 < lesson.cards.count {
+                            cardIndex += 1
+                        } else {
+                            phase = .quiz
+                        }
+                    }
+                } label: {
+                    Text(cardIndex + 1 < lesson.cards.count ? "Suivant" : "Commencer le quiz")
+                        .font(.headline)
+                        .frame(maxWidth: .infinity)
+                }
+                .buttonStyle(.borderedProminent)
+                .controlSize(.large)
+                .tint(color)
+            }
         }
-        .padding(24)
+        .padding(.horizontal, 20)
+        .padding(.bottom, 20)
         .id("card\(cardIndex)")
         .transition(.asymmetric(insertion: .move(edge: .trailing), removal: .opacity))
     }
@@ -124,7 +157,7 @@ struct LessonView: View {
             Button {
                 nextQuestion()
             } label: {
-                Text(questionIndex + 1 < lesson.quiz.count ? "Continue" : "See results")
+                Text(questionIndex + 1 < lesson.quiz.count ? "Continuer" : "Voir les résultats")
                     .font(.headline)
                     .frame(maxWidth: .infinity)
             }
@@ -160,17 +193,17 @@ struct LessonView: View {
             Image(systemName: passed ? "trophy.fill" : "arrow.counterclockwise.circle.fill")
                 .font(.system(size: 80))
                 .foregroundStyle(passed ? Color.orange : color)
-            Text(passed ? "Lesson complete!" : "Almost there")
+            Text(passed ? "Leçon terminée !" : "Presque")
                 .font(.largeTitle.bold())
-            Text("\(correctCount) of \(lesson.quiz.count) correct")
+            Text("\(correctCount) sur \(lesson.quiz.count) justes")
                 .font(.title3)
                 .foregroundStyle(.secondary)
-            Text(earnedXP > 0 ? "+\(earnedXP) XP" : "No new XP this time")
+            Text(earnedXP > 0 ? "+\(earnedXP) XP" : "Pas de nouvel XP cette fois")
                 .font(.title2.bold())
                 .foregroundStyle(Color.orange)
             if !passed {
                 let needed = Int((Double(lesson.quiz.count) * ProgressStore.passRatio).rounded(.up))
-                Text(needed - correctCount == 1 ? "So close! Just 1 more right answer unlocks the next lesson." : "Get at least \(needed) right to unlock the next lesson.")
+                Text(needed - correctCount == 1 ? "Si près ! Une seule bonne réponse de plus débloque la leçon suivante." : "Il faut au moins \(needed) bonnes réponses pour débloquer la leçon suivante.")
                     .font(.subheadline)
                     .multilineTextAlignment(.center)
                     .foregroundStyle(.secondary)
@@ -183,7 +216,7 @@ struct LessonView: View {
                 Button {
                     dismiss()
                 } label: {
-                    Text(passed ? "Continue" : "Back")
+                    Text(passed ? "Continuer" : "Retour")
                         .font(.headline)
                         .frame(maxWidth: .infinity)
                 }
@@ -194,7 +227,7 @@ struct LessonView: View {
                 Button {
                     restart()
                 } label: {
-                    Text("Try again")
+                    Text("Réessayer")
                         .font(.headline)
                         .frame(maxWidth: .infinity)
                 }

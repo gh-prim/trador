@@ -22,8 +22,8 @@ struct GlossaryView: View {
                 }
                 .padding(.vertical, 2)
             }
-            .navigationTitle("Glossary")
-            .searchable(text: $search, prompt: "Search terms")
+            .navigationTitle("Glossaire")
+            .searchable(text: $search, prompt: "Chercher un terme")
         }
     }
 }

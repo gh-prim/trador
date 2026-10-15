@@ -14,10 +14,10 @@ struct ChestView: View {
                     .font(.system(size: 44))
                     .foregroundStyle(rarity.color)
                     .symbolEffect(.bounce, value: rarity)
-                Text("\(rarity.rawValue) chest!")
+                Text("Coffre \(rarity.rawValue) !")
                     .font(.title2.bold())
                     .foregroundStyle(rarity.color)
-                Text("+\(rarity.xp) XP" + (rarity.givesFreeze ? " and a streak freeze" : ""))
+                Text("+\(rarity.xp) XP" + (rarity.givesFreeze ? " et un gel de série" : ""))
                     .font(.headline)
             } else {
                 Button {
@@ -29,7 +29,7 @@ struct ChestView: View {
                             .foregroundStyle(Color.orange)
                             .rotationEffect(.degrees(shaking ? 8 : -8))
                             .scaleEffect(opening ? 1.3 : 1)
-                        Text(opening ? "Opening..." : "Tap to open your mystery chest")
+                        Text(opening ? "Ouverture..." : "Touche pour ouvrir ton coffre mystère")
                             .font(.headline)
                             .foregroundStyle(Color.primary)
                     }

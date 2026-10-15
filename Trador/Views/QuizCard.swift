@@ -13,12 +13,12 @@ struct QuizCard: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 16) {
             HStack {
-                Text("Question \(number) of \(total)")
+                Text("Question \(number) sur \(total)")
                     .font(.caption.bold())
                     .foregroundStyle(.secondary)
                 Spacer()
                 if combo >= 2 {
-                    Label("\(combo) in a row", systemImage: "flame.fill")
+                    Label("\(combo) d'affilée", systemImage: "flame.fill")
                         .font(.caption.bold())
                         .foregroundStyle(Color.orange)
                         .transition(.scale.combined(with: .opacity))
@@ -63,7 +63,7 @@ struct QuizCard: View {
             if let choice = selected {
                 let right = choice == question.answer
                 VStack(alignment: .leading, spacing: 6) {
-                    Text(right ? "Correct!" : "Not quite")
+                    Text(right ? "Bonne réponse !" : "Pas tout à fait")
                         .font(.headline)
                         .foregroundStyle(right ? Color.green : Color.red)
                     Text(question.explanation)

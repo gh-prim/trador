@@ -18,7 +18,7 @@ struct ModuleView: View {
                 }
                 .padding(.vertical, 4)
             }
-            Section("Lessons") {
+            Section("Leçons") {
                 ForEach(Array(module.lessons.enumerated()), id: \.element.id) { index, lesson in
                     let unlocked = progress.isUnlocked(lesson: lesson, in: module)
                     let done = progress.isCompleted(lesson)

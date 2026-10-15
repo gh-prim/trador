@@ -11,13 +11,13 @@ enum InstrumentKind: String, CaseIterable, Identifiable {
     var blurb: String {
         switch self {
         case .spot:
-            return "Buy the coin itself. No leverage, no liquidation. You win if price goes up."
+            return "Tu achètes le coin lui-même. Pas de levier, pas de liquidation. Tu gagnes si le prix monte."
         case .option:
-            return "Pay a premium for the right to buy (call) or sell (put) at the strike. Max loss is the premium."
+            return "Tu paies une prime pour le droit d'acheter (call) ou de vendre (put) au strike. Ta perte max est la prime."
         case .future:
-            return "Long or short with leverage. Expires in \(MarketSim.futureLife) ticks and settles at spot."
+            return "Long ou short avec levier. Expire dans \(MarketSim.futureLife) ticks et se règle au prix spot."
         case .perp:
-            return "Like a future with no expiry. Funding is paid every \(MarketSim.fundingInterval) ticks."
+            return "Comme un future sans échéance. Le funding est payé tous les \(MarketSim.fundingInterval) ticks."
         }
     }
 }
@@ -249,7 +249,7 @@ final class MarketSim: ObservableObject {
     func open(kind: InstrumentKind, side: Side, amount: Double, leverage: Double,
               optionType: OptionType, strikeChoice: StrikeChoice) {
         guard amount > 0, amount <= cash + 0.001 else {
-            banner = "Not enough cash for that trade"
+            banner = "Pas assez de liquidités pour ce trade"
             return
         }
         let position: Position
@@ -276,7 +276,7 @@ final class MarketSim: ObservableObject {
         cash -= amount
         positions.insert(position, at: 0)
         saveCash()
-        banner = "Opened \(position.title)"
+        banner = "Ouvert : \(position.title)"
         onMission?("first_trade")
         checkHedges()
     }
@@ -294,7 +294,7 @@ final class MarketSim: ObservableObject {
 
     func close(_ id: UUID) {
         guard let index = positions.firstIndex(where: { $0.id == id }) else { return }
-        settle(at: index, reason: "Closed")
+        settle(at: index, reason: "Clôturé")
     }
 
     private func settle(at index: Int, reason: String) {
@@ -306,10 +306,10 @@ final class MarketSim: ObservableObject {
         positions.remove(at: index)
         saveCash()
         record(position, pnl: payout - position.margin, reason: reason)
-        let streakNote = winStreak >= 2 ? "  |  \(winStreak) wins in a row!" : ""
+        let streakNote = winStreak >= 2 ? "  |  \(winStreak) gains d'affilée !" : ""
         banner = "\(reason) \(position.title): \(Fmt.signedMoney(payout - position.margin))\(streakNote)"
 
-        if position.kind == .future && reason == "Settled" {
+        if position.kind == .future && reason == "Réglé" {
             onMission?("future_expiry")
         }
         guard profit > 0 else { return }
@@ -348,7 +348,7 @@ final class MarketSim: ObservableObject {
             if payment < 0 { received = true }
         }
         if positions.contains(where: { $0.kind == .perp }) {
-            banner = "Funding \(Fmt.rate(fundingRate)): " + (fundingRate >= 0 ? "longs paid shorts" : "shorts paid longs")
+            banner = "Funding \(Fmt.rate(fundingRate)): " + (fundingRate >= 0 ? "les longs ont payé les shorts" : "les shorts ont payé les longs")
         }
         if received { onMission?("funding_received") }
         // Usually positive, like real markets where traders lean long.
@@ -359,7 +359,7 @@ final class MarketSim: ObservableObject {
         let due = positions.filter { ($0.expiryTick ?? Int.max) <= tick }.map(\.id)
         for id in due {
             if let index = positions.firstIndex(where: { $0.id == id }) {
-                settle(at: index, reason: "Settled")
+                settle(at: index, reason: "Réglé")
             }
         }
     }
@@ -371,8 +371,8 @@ final class MarketSim: ObservableObject {
         for position in liquidated {
             positions.removeAll { $0.id == position.id }
             realizedPnL -= position.margin
-            record(position, pnl: -position.margin, reason: "Liquidated")
-            banner = "Liquidated! \(position.title) lost \(Fmt.money(position.margin))"
+            record(position, pnl: -position.margin, reason: "Liquidé")
+            banner = "Liquidé ! \(position.title) a perdu \(Fmt.money(position.margin))"
         }
     }
 
@@ -383,7 +383,7 @@ final class MarketSim: ObservableObject {
         closedTrades = []
         UserDefaults.standard.removeObject(forKey: Self.tradesKey)
         saveCash()
-        banner = "Account reset to \(Fmt.money(Self.startingCash))"
+        banner = "Compte remis à \(Fmt.money(Self.startingCash))"
     }
 
     /// Open trades are not saved, so their current value goes back to cash on the next launch.

@@ -2,10 +2,10 @@ import SwiftUI
 
 /// A surprise reward. Unpredictable rewards are the strongest dopamine trigger in games.
 enum ChestRarity: String, CaseIterable {
-    case common = "Common"
-    case rare = "Rare"
-    case epic = "Epic"
-    case legendary = "Legendary"
+    case common = "commun"
+    case rare = "rare"
+    case epic = "épique"
+    case legendary = "légendaire"
 
     var xp: Int {
         switch self {
@@ -121,15 +121,15 @@ final class ProgressStore: ObservableObject {
 
     static func rank(for level: Int) -> String {
         switch level {
-        case 1: return "Rookie"
-        case 2: return "Paper Trader"
-        case 3...4: return "Chart Reader"
-        case 5...6: return "Risk Manager"
-        case 7...8: return "Options Apprentice"
-        case 9...11: return "Futures Pro"
-        case 12...14: return "Perp Master"
-        case 15...19: return "Hedge Wizard"
-        default: return "Derivatives Legend"
+        case 1: return "Débutant"
+        case 2: return "Trader en herbe"
+        case 3...4: return "Lecteur de graphiques"
+        case 5...6: return "Gestionnaire de risque"
+        case 7...8: return "Apprenti options"
+        case 9...11: return "Pro des futures"
+        case 12...14: return "Maître des perps"
+        case 15...19: return "Sorcier de la couverture"
+        default: return "Légende des dérivés"
         }
     }
 

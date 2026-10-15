@@ -13,14 +13,14 @@ struct ProfileView: View {
                         .listRowBackground(Color.clear)
                 }
 
-                Section("Stats") {
-                    statRow("Lessons done", "\(progress.completedLessons.count)/\(Curriculum.lessonCount)")
-                    statRow("Missions done", "\(progress.completedMissions.count)/\(Missions.all.count)")
-                    statRow("Total XP", "\(progress.xp)")
-                    statRow("Current streak", "\(progress.currentStreak) days")
-                    statRow("Best streak", "\(progress.bestStreak) days")
-                    statRow("Streak freezes", "\(progress.streakFreezes)")
-                    statRow("Chests opened", "\(progress.chestsOpened)")
+                Section("Statistiques") {
+                    statRow("Leçons terminées", "\(progress.completedLessons.count)/\(Curriculum.lessonCount)")
+                    statRow("Missions terminées", "\(progress.completedMissions.count)/\(Missions.all.count)")
+                    statRow("XP total", "\(progress.xp)")
+                    statRow("Série actuelle", "\(progress.currentStreak) jours")
+                    statRow("Meilleure série", "\(progress.bestStreak) jours")
+                    statRow("Gels de série", "\(progress.streakFreezes)")
+                    statRow("Coffres ouverts", "\(progress.chestsOpened)")
                 }
 
                 Section {
@@ -44,22 +44,22 @@ struct ProfileView: View {
                         }
                     }
                 } header: {
-                    Text("Trading missions")
+                    Text("Missions de trading")
                 } footer: {
-                    Text("Complete missions on the Trade tab with fake money.")
+                    Text("Accomplis les missions dans l'onglet Trader, avec de l'argent fictif.")
                 }
 
                 Section {
-                    Button("Reset all progress", role: .destructive) {
+                    Button("Effacer toute la progression", role: .destructive) {
                         confirmReset = true
                     }
                 } footer: {
-                    Text("Trador is for learning only. Real trading with leverage can lose all your money.")
+                    Text("Trador sert uniquement à apprendre. En vrai, le trading avec levier peut te faire perdre tout ton argent.")
                 }
             }
-            .navigationTitle("Profile")
-            .confirmationDialog("Erase all XP, lessons and missions?", isPresented: $confirmReset, titleVisibility: .visible) {
-                Button("Reset progress", role: .destructive) { progress.resetAll() }
+            .navigationTitle("Profil")
+            .confirmationDialog("Effacer tout l'XP, les leçons et les missions ?", isPresented: $confirmReset, titleVisibility: .visible) {
+                Button("Effacer la progression", role: .destructive) { progress.resetAll() }
             }
         }
     }

@@ -7,13 +7,13 @@ struct RootView: View {
     var body: some View {
         TabView {
             LearnView()
-                .tabItem { Label("Learn", systemImage: "book.fill") }
+                .tabItem { Label("Apprendre", systemImage: "book.fill") }
             TradingFloorView()
-                .tabItem { Label("Trade", systemImage: "chart.line.uptrend.xyaxis") }
+                .tabItem { Label("Trader", systemImage: "chart.line.uptrend.xyaxis") }
             GlossaryView()
-                .tabItem { Label("Glossary", systemImage: "character.book.closed.fill") }
+                .tabItem { Label("Glossaire", systemImage: "character.book.closed.fill") }
             ProfileView()
-                .tabItem { Label("Profile", systemImage: "person.crop.circle.fill") }
+                .tabItem { Label("Profil", systemImage: "person.crop.circle.fill") }
         }
         .overlay(alignment: .top) {
             if let message = market.banner {
@@ -43,7 +43,7 @@ struct RootView: View {
             let sim = market
             sim.onMission = { [weak sim] id in
                 if let mission = store.completeMission(id) {
-                    sim?.banner = "Mission complete: \(mission.title) +\(mission.xp) XP"
+                    sim?.banner = "Mission accomplie : \(mission.title) +\(mission.xp) XP"
                 }
             }
         }

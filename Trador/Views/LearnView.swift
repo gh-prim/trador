@@ -54,9 +54,9 @@ struct LearnView: View {
                     .font(.system(size: 40))
                     .foregroundStyle(done ? Color.green : Color.white)
                 VStack(alignment: .leading, spacing: 2) {
-                    Text("Daily Challenge")
+                    Text("Défi du jour")
                         .font(.headline)
-                    Text(done ? "Done! New one in \(ProgressStore.hoursUntilTomorrow)h. Play again for practice." : "5 quick questions, combo bonus, mystery chest.")
+                    Text(done ? "Fait ! Nouveau défi dans \(ProgressStore.hoursUntilTomorrow) h. Rejoue pour t'entraîner." : "5 questions rapides, bonus combo, coffre mystère.")
                         .font(.subheadline)
                         .opacity(0.9)
                 }
@@ -83,13 +83,13 @@ struct LearnView: View {
                     .font(.system(size: 40))
                     .foregroundStyle(module.color)
                 VStack(alignment: .leading, spacing: 2) {
-                    Text("Continue: \(module.title)")
+                    Text("Continuer : \(module.title)")
                         .font(.caption.bold())
                         .foregroundStyle(.secondary)
                     Text(lesson.title)
                         .font(.headline)
                         .foregroundStyle(Color.primary)
-                    Text("+\(ProgressStore.lessonBonusXP + lesson.quiz.count * ProgressStore.xpPerCorrectAnswer) XP and a mystery chest")
+                    Text("+\(ProgressStore.lessonBonusXP + lesson.quiz.count * ProgressStore.xpPerCorrectAnswer) XP et un coffre mystère")
                         .font(.caption)
                         .foregroundStyle(Color.orange)
                 }
@@ -122,14 +122,14 @@ struct StreakHeader: View {
             }
             .frame(width: 54, height: 54)
             VStack(alignment: .leading, spacing: 2) {
-                Text("\(progress.currentStreak) day streak")
+                Text("Série de \(progress.currentStreak) jours")
                     .font(.title3.bold())
                 if progress.streakAtRisk {
-                    Text("Play today or lose your streak!")
+                    Text("Joue aujourd'hui ou tu perds ta série !")
                         .font(.subheadline.bold())
                         .foregroundStyle(Color.red)
                 } else {
-                    Text("Daily goal: \(min(progress.todayXP, ProgressStore.dailyGoal))/\(ProgressStore.dailyGoal) XP")
+                    Text("Objectif du jour : \(min(progress.todayXP, ProgressStore.dailyGoal))/\(ProgressStore.dailyGoal) XP")
                         .font(.subheadline)
                         .foregroundStyle(.secondary)
                 }
@@ -154,7 +154,7 @@ struct XPHeader: View {
         VStack(alignment: .leading, spacing: 10) {
             HStack {
                 VStack(alignment: .leading, spacing: 2) {
-                    Text("Level \(progress.level)")
+                    Text("Niveau \(progress.level)")
                         .font(.title2.bold())
                     Text(progress.rankTitle)
                         .font(.subheadline)
@@ -167,7 +167,7 @@ struct XPHeader: View {
             }
             ProgressView(value: progress.levelProgress)
                 .tint(.orange)
-            Text("\(progress.xpToNextLevel) XP to level \(progress.level + 1)")
+            Text("Encore \(progress.xpToNextLevel) XP pour le niveau \(progress.level + 1)")
                 .font(.caption)
                 .foregroundStyle(.secondary)
         }
@@ -200,13 +200,13 @@ struct ModuleCard: View {
                     .foregroundStyle(.secondary)
                 Text(module.title)
                     .font(.headline)
-                Text(unlocked ? module.subtitle : "Finish the previous module to unlock.")
+                Text(unlocked ? module.subtitle : "Termine le module précédent pour débloquer.")
                     .font(.subheadline)
                     .foregroundStyle(.secondary)
                     .fixedSize(horizontal: false, vertical: true)
                 ProgressView(value: Double(done), total: Double(total))
                     .tint(module.color)
-                Text("\(done)/\(total) lessons")
+                Text("\(done)/\(total) leçons")
                     .font(.caption)
                     .foregroundStyle(.secondary)
             }

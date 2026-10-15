@@ -57,12 +57,12 @@ struct DailyChallengeView: View {
     private var quizView: some View {
         VStack(spacing: 16) {
             HStack {
-                Label("Daily Challenge", systemImage: "bolt.fill")
+                Label("Défi du jour", systemImage: "bolt.fill")
                     .font(.headline)
                     .foregroundStyle(color)
                 Spacer()
                 if alreadyDone {
-                    Text("Practice mode")
+                    Text("Mode entraînement")
                         .font(.caption.bold())
                         .foregroundStyle(.secondary)
                 }
@@ -91,7 +91,7 @@ struct DailyChallengeView: View {
             Button {
                 next()
             } label: {
-                Text(index + 1 < questions.count ? "Continue" : "Finish")
+                Text(index + 1 < questions.count ? "Continuer" : "Terminer")
                     .font(.headline)
                     .frame(maxWidth: .infinity)
             }
@@ -124,9 +124,9 @@ struct DailyChallengeView: View {
             Image(systemName: "flame.fill")
                 .font(.system(size: 80))
                 .foregroundStyle(color)
-            Text("\(progress.currentStreak) day streak")
+            Text("Série de \(progress.currentStreak) jours")
                 .font(.largeTitle.bold())
-            Text("\(correct) of \(questions.count) correct · best combo \(bestCombo)")
+            Text("\(correct) sur \(questions.count) justes · meilleur combo \(bestCombo)")
                 .font(.headline)
                 .foregroundStyle(.secondary)
             if awarded > 0 {
@@ -134,21 +134,21 @@ struct DailyChallengeView: View {
                     .font(.title.bold())
                     .foregroundStyle(color)
             } else {
-                Text("Practice round. New challenge in \(ProgressStore.hoursUntilTomorrow)h.")
+                Text("Entraînement. Nouveau défi dans \(ProgressStore.hoursUntilTomorrow) h.")
                     .font(.headline)
                     .multilineTextAlignment(.center)
             }
             if awarded > 0 {
                 ChestView()
             }
-            Text("Come back tomorrow to keep your streak alive.")
+            Text("Reviens demain pour garder ta série.")
                 .font(.subheadline)
                 .foregroundStyle(.secondary)
             Spacer()
             Button {
                 dismiss()
             } label: {
-                Text("Done")
+                Text("Terminé")
                     .font(.headline)
                     .frame(maxWidth: .infinity)
             }

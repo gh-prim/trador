@@ -9,7 +9,7 @@ private func q(_ prompt: String, _ options: [String], _ answer: Int, _ explanati
 }
 
 enum Curriculum {
-    static let modules: [Module] = [basics, derivatives, options, futures, perps]
+    static let modules: [Module] = [basics, derivatives, options, futures, perps, hedging, history]
 
     static func module(id: String) -> Module? {
         modules.first { $0.id == id }
@@ -546,6 +546,264 @@ enum Curriculum {
             ),
         ]
     )
+    // MARK: 6. Hedging strategies
+
+    static let hedging = Module(
+        id: "hedging",
+        title: "Hedging Strategies",
+        subtitle: "Protect your trades like the pros.",
+        icon: "umbrella.fill",
+        color: .indigo,
+        lessons: [
+            Lesson(
+                id: "hedging.what",
+                title: "What is hedging?",
+                summary: "Insurance for your trades.",
+                cards: [
+                    card("umbrella.fill", "Insurance for trades",
+                         "A hedge is a second position that gains when your main position loses. You give up some profit to sleep at night."),
+                    card("scalemass.fill", "Hedges cost something",
+                         "You pay with a premium, fees or capped upside. A perfect hedge also removes your profit."),
+                    card("person.3.fill", "Who hedges?",
+                         "Farmers, airlines, miners, funds and crypto holders. Anyone who wants less risk, not more."),
+                    card("percent", "Hedge ratio",
+                         "How much of your position you cover. Own 10 coins and hedge 5: that is a 50% hedge."),
+                ],
+                quiz: [
+                    q("A hedge is a position that...",
+                      ["Doubles your risk", "Gains when your main position loses", "Costs nothing"], 1,
+                      "It moves the opposite way to protect you."),
+                    q("You own 8 coins and short 2 coins of futures. Hedge ratio?",
+                      ["25%", "50%", "80%"], 0,
+                      "2 / 8 = 25%."),
+                    q("Main downside of hedging?",
+                      ["It costs money or caps gains", "It is illegal", "It adds risk"], 0,
+                      "Protection is never free."),
+                ]
+            ),
+            Lesson(
+                id: "hedging.put",
+                title: "Protective put",
+                summary: "Own it, then insure it.",
+                cards: [
+                    card("shield.lefthalf.filled", "Own it, insure it",
+                         "Hold the coin and buy a put. If price crashes, the put gains and limits your loss."),
+                    card("function", "Max loss",
+                         "Max loss = (entry - strike) + premium. Own at $100, buy a $90 put for $3: worst case you lose $13 per coin."),
+                    card("chart.line.uptrend.xyaxis", "Upside kept",
+                         "If price rockets, you keep all the gains minus the premium you paid."),
+                    card("car.fill", "Like car insurance",
+                         "You pay every period. Most of the time nothing happens. The day it crashes, you are glad you paid."),
+                ],
+                quiz: [
+                    q("Protective put = own the coin and...",
+                      ["Buy a call", "Buy a put", "Sell a put"], 1,
+                      "The put is your insurance."),
+                    q("Own at $50, buy a $45 put for $2. Max loss per coin?",
+                      ["$5", "$7", "$2"], 1,
+                      "(50 - 45) + 2 = $7."),
+                    q("Price doubles. With a protective put you...",
+                      ["Lose the gain", "Keep the gain minus the premium", "Get liquidated"], 1,
+                      "The put expires worthless, the coin keeps its gain."),
+                ]
+            ),
+            Lesson(
+                id: "hedging.collar",
+                title: "Covered call and collar",
+                summary: "Earn income, cap risk.",
+                cards: [
+                    card("banknote.fill", "Covered call",
+                         "Own the coin and sell a call. You collect premium now, but if price flies above the strike, your gains are capped."),
+                    card("arrow.left.and.right", "Good for flat markets",
+                         "Covered calls earn income when price goes sideways. A bad deal if you expect a moonshot."),
+                    card("arrow.up.and.down.square.fill", "Collar",
+                         "Own the coin, buy a put AND sell a call. The call premium pays for the put. Loss and gain are both limited."),
+                    card("equal.square.fill", "Zero cost collar",
+                         "If both premiums match, your insurance is free. The price: no gains above the call strike."),
+                ],
+                quiz: [
+                    q("A covered call means you own the coin and...",
+                      ["Sell a call", "Buy a call", "Buy a put"], 0,
+                      "Selling the call brings in premium."),
+                    q("Main risk of a covered call?",
+                      ["Unlimited loss on the call", "Missing big gains above the strike", "Funding payments"], 1,
+                      "Your coin covers the call, so the cost is lost upside."),
+                    q("A collar combines...",
+                      ["Long put + short call", "Two long calls", "A perp and a future"], 0,
+                      "Floor from the put, ceiling from the call."),
+                ]
+            ),
+            Lesson(
+                id: "hedging.futures",
+                title: "Hedging with futures and perps",
+                summary: "Delta neutral, cash and carry, funding farming.",
+                cards: [
+                    card("arrow.down.right.circle.fill", "Short to protect",
+                         "Own 1 BTC? Short 1 BTC of futures or perps. Price moves now cancel out and your total value stays flat."),
+                    card("equal.circle.fill", "Delta neutral",
+                         "When gains on one side match losses on the other, you are delta neutral: price moves do not change your P&L."),
+                    card("arrow.triangle.2.circlepath", "Cash and carry",
+                         "Buy spot, short the future at a higher price, hold to expiry. You earn the basis with almost no price risk."),
+                    card("dollarsign.circle.fill", "Funding farming",
+                         "Buy spot, short the perp. When funding is positive, shorts get paid. Real yield, but exchanges can fail."),
+                ],
+                quiz: [
+                    q("You own 2 ETH and short 2 ETH perps. ETH drops 10%. Total P&L?",
+                      ["-10%", "About zero", "+10%"], 1,
+                      "The short gains what the spot loses."),
+                    q("Cash and carry earns...",
+                      ["The basis", "The strike", "Liquidations"], 0,
+                      "Future price minus spot, collected at expiry."),
+                    q("Spot long + perp short, funding positive. Who pays you?",
+                      ["Nobody", "Longs on the perp", "The exchange"], 1,
+                      "Positive funding: longs pay shorts."),
+                ]
+            ),
+            Lesson(
+                id: "hedging.pairs",
+                title: "Pairs and diversification",
+                summary: "Bet on the gap, spread the risk.",
+                cards: [
+                    card("square.on.square", "Pairs trade",
+                         "Long one asset and short a similar one, like long Coke and short Pepsi. You bet on the gap, not the market."),
+                    card("chart.pie.fill", "Diversification",
+                         "Do not put everything in one coin. Assets that do not move together smooth your ride."),
+                    card("link", "Correlation",
+                         "How much two assets move together. In a crash, correlations jump toward 1: everything falls at once."),
+                    card("exclamationmark.triangle.fill", "Basis risk",
+                         "If your hedge is not the exact same asset, it may not move the same way. That leftover risk is basis risk."),
+                ],
+                quiz: [
+                    q("Long Coke, short Pepsi is a bet on...",
+                      ["The whole market rising", "Coke beating Pepsi", "Interest rates"], 1,
+                      "Market moves cancel, only the gap matters."),
+                    q("In a big crash, correlations usually...",
+                      ["Go up", "Go down", "Disappear"], 0,
+                      "Panic makes everything fall together."),
+                    q("Hedging BTC with an ETH short leaves you with...",
+                      ["No risk", "Basis risk", "Funding risk only"], 1,
+                      "BTC and ETH do not move exactly the same."),
+                ]
+            ),
+        ]
+    )
+
+    // MARK: 7. Market history
+
+    static let history = Module(
+        id: "history",
+        title: "Market History",
+        subtitle: "4,000 years of deals, bubbles and blowups.",
+        icon: "scroll.fill",
+        color: .brown,
+        lessons: [
+            Lesson(
+                id: "history.ancient",
+                title: "Ancient roots",
+                summary: "Grain, olives, rice and tulips.",
+                cards: [
+                    card("building.columns.fill", "Mesopotamia",
+                         "Around 1750 BC, the Code of Hammurabi already described contracts for future delivery of grain."),
+                    card("leaf.fill", "Thales and the olive presses",
+                         "Greek thinker Thales paid small deposits to reserve olive presses. A big harvest came and he rented them out at a profit. One of the first options."),
+                    card("bag.fill", "Dojima rice exchange",
+                         "In 1730s Osaka, Japan, merchants traded rice futures at Dojima. Often called the first organized futures market."),
+                    card("camera.macro", "Tulip mania",
+                         "In 1630s Holland, people traded contracts on tulip bulbs. Prices exploded, then crashed in 1637. A classic bubble."),
+                ],
+                quiz: [
+                    q("Thales reserving olive presses is an early...",
+                      ["Option", "Stock", "Bond"], 0,
+                      "A small deposit for the right to use something later."),
+                    q("Where was the Dojima rice exchange?",
+                      ["London", "Osaka", "Chicago"], 1,
+                      "Osaka, Japan, in the 1700s."),
+                    q("Tulip mania happened in...",
+                      ["The Netherlands", "Japan", "The USA"], 0,
+                      "Holland, 1630s."),
+                ]
+            ),
+            Lesson(
+                id: "history.modern",
+                title: "Modern markets are born",
+                summary: "Chicago, Black-Scholes and swaps.",
+                cards: [
+                    card("building.2.fill", "Chicago 1848",
+                         "The Chicago Board of Trade (CBOT) opened to trade grain. Standard futures contracts followed in 1865."),
+                    card("dollarsign.circle.fill", "Financial futures 1972",
+                         "After the dollar left the gold standard, currency futures launched in Chicago. Stock index futures came in 1982."),
+                    card("function", "Black-Scholes 1973",
+                         "A formula to price options was published the same year the CBOE opened for listed options. Options exploded."),
+                    card("arrow.triangle.swap", "Swaps 1981",
+                         "IBM and the World Bank did one of the first famous swaps. Today swaps are worth hundreds of trillions."),
+                ],
+                quiz: [
+                    q("CBOT opened in Chicago in...",
+                      ["1848", "1973", "2016"], 0,
+                      "1848, to trade grain."),
+                    q("What did Black-Scholes help price?",
+                      ["Options", "Houses", "Gold mines"], 0,
+                      "It is the famous option pricing formula."),
+                    q("One of the first famous swaps was between...",
+                      ["IBM and the World Bank", "Apple and Google", "Two farmers"], 0,
+                      "1981, IBM and the World Bank."),
+                ]
+            ),
+            Lesson(
+                id: "history.blowups",
+                title: "Famous blowups",
+                summary: "1987, Barings, LTCM, 2008.",
+                cards: [
+                    card("chart.line.downtrend.xyaxis", "Black Monday 1987",
+                         "US stocks fell 22% in one day. Portfolio insurance that sold futures as prices fell made the crash worse."),
+                    card("person.fill.xmark", "Barings Bank 1995",
+                         "One trader, Nick Leeson, hid losses on Nikkei futures. They grew to $1.3 billion and broke a 233 year old bank."),
+                    card("graduationcap.fill", "LTCM 1998",
+                         "A hedge fund run by Nobel winners used huge leverage. A Russian default broke their models. The Fed organized a rescue."),
+                    card("house.fill", "2008 crisis",
+                         "Derivatives on bad mortgages (CDOs) and insurance on them (CDS) spread losses everywhere. AIG needed a giant bailout."),
+                ],
+                quiz: [
+                    q("How much did US stocks drop on Black Monday 1987?",
+                      ["About 5%", "About 22%", "About 60%"], 1,
+                      "The worst one day drop in US history."),
+                    q("What broke Barings Bank?",
+                      ["One trader hiding futures losses", "A cyber attack", "A bank holiday"], 0,
+                      "Nick Leeson hid losses in a secret account."),
+                    q("Main lesson from LTCM?",
+                      ["Big leverage can sink even geniuses", "Models are always right", "Leverage is safe"], 0,
+                      "Leverage turns a small mistake into a fatal one."),
+                ]
+            ),
+            Lesson(
+                id: "history.crypto",
+                title: "The crypto era",
+                summary: "Perps, liquidations and collapses.",
+                cards: [
+                    card("infinity", "BitMEX and the perp, 2016",
+                         "Crypto exchange BitMEX launched the perpetual swap with up to 100x leverage. Every big exchange copied it."),
+                    card("flame.fill", "March 2020",
+                         "Bitcoin fell about 50% in two days. Over $1 billion of leveraged longs were liquidated."),
+                    card("moon.fill", "LUNA collapse, 2022",
+                         "The LUNA and UST ecosystem lost about $40 billion in days. Overleveraged funds like Three Arrows Capital went bust."),
+                    card("xmark.octagon.fill", "FTX, 2022",
+                         "A top exchange collapsed after misusing customer money. Lesson: counterparty risk is real."),
+                ],
+                quiz: [
+                    q("Who popularized the perpetual swap?",
+                      ["BitMEX", "NASDAQ", "The Fed"], 0,
+                      "BitMEX, in 2016."),
+                    q("Big lesson from FTX?",
+                      ["Exchanges can fail: counterparty risk", "Perps are risk free", "Funding is always positive"], 0,
+                      "Your money is only as safe as whoever holds it."),
+                    q("Common thread in most blowups?",
+                      ["Too much leverage", "Too little leverage", "Too many stop losses"], 0,
+                      "Almost every disaster in this lesson had huge leverage."),
+                ]
+            ),
+        ]
+    )
+
 }
 
 enum Missions {
@@ -558,6 +816,11 @@ enum Missions {
         Mission(id: "future_expiry", title: "Hold to expiry", detail: "Keep a future open until it settles.", xp: 40),
         Mission(id: "funding_received", title: "Paid to wait", detail: "Receive a funding payment on a perp.", xp: 40),
         Mission(id: "lev_profit", title: "Steady hands", detail: "Close a 10x or higher perp in profit.", xp: 60),
+        Mission(id: "hedge_put", title: "Insured", detail: "Hold spot and a put at the same time (protective put).", xp: 50),
+        Mission(id: "hedge_short", title: "Delta neutral", detail: "Hold spot and a short future or perp at the same time.", xp: 50),
+        Mission(id: "daily_done", title: "Daily grind", detail: "Finish a Daily Challenge.", xp: 30),
+        Mission(id: "streak_3", title: "On fire", detail: "Keep a 3 day streak.", xp: 50),
+        Mission(id: "streak_7", title: "Unstoppable", detail: "Keep a 7 day streak.", xp: 150),
     ]
 }
 
@@ -565,16 +828,24 @@ enum Glossary {
     static let terms: [GlossaryTerm] = [
         GlossaryTerm(term: "Ask", definition: "The lowest price a seller accepts. You buy here."),
         GlossaryTerm(term: "Backwardation", definition: "When a future trades below the spot price."),
+        GlossaryTerm(term: "Basis risk", definition: "The risk that a hedge does not move exactly like the asset it protects."),
         GlossaryTerm(term: "Basis", definition: "Futures price minus spot price. Goes to zero at expiry."),
         GlossaryTerm(term: "Bid", definition: "The highest price a buyer offers. You sell here."),
         GlossaryTerm(term: "Breakeven", definition: "The price where a trade makes zero profit. Call: strike + premium. Put: strike - premium."),
         GlossaryTerm(term: "Call", definition: "An option giving the right to buy at the strike before expiry."),
+        GlossaryTerm(term: "Cash and carry", definition: "Buy spot and short the future to earn the basis with little price risk."),
+        GlossaryTerm(term: "Collar", definition: "Own an asset, buy a put and sell a call. Limits both loss and gain."),
         GlossaryTerm(term: "Contango", definition: "When a future trades above the spot price."),
+        GlossaryTerm(term: "Correlation", definition: "How much two assets move together, from -1 to 1."),
+        GlossaryTerm(term: "Counterparty risk", definition: "The risk that the other side, or the exchange, fails to pay."),
+        GlossaryTerm(term: "Covered call", definition: "Own an asset and sell a call on it to earn premium."),
+        GlossaryTerm(term: "Delta neutral", definition: "A mix of positions whose total value does not change with small price moves."),
         GlossaryTerm(term: "Delta", definition: "How much an option price moves for a $1 move in the underlying."),
         GlossaryTerm(term: "Derivative", definition: "A contract whose value comes from an underlying asset."),
         GlossaryTerm(term: "Expiry", definition: "The date an option or future ends and settles."),
         GlossaryTerm(term: "Funding rate", definition: "Periodic payment between perp longs and shorts that keeps the perp near spot."),
         GlossaryTerm(term: "Future", definition: "An obligation to buy or sell an asset at a set price on a set date."),
+        GlossaryTerm(term: "Hedge ratio", definition: "The share of a position that is hedged."),
         GlossaryTerm(term: "Hedge", definition: "A trade that reduces the risk of another position."),
         GlossaryTerm(term: "Intrinsic value", definition: "What an option would be worth if exercised now. Never below zero."),
         GlossaryTerm(term: "Leverage", definition: "Using margin to control a bigger position. Multiplies gains and losses."),
@@ -588,6 +859,7 @@ enum Glossary {
         GlossaryTerm(term: "Perpetual (perp)", definition: "A futures style contract with no expiry that uses funding to track spot."),
         GlossaryTerm(term: "P&L", definition: "Profit and loss."),
         GlossaryTerm(term: "Premium", definition: "The price paid for an option."),
+        GlossaryTerm(term: "Protective put", definition: "Own an asset and buy a put to cap the loss."),
         GlossaryTerm(term: "Put", definition: "An option giving the right to sell at the strike before expiry."),
         GlossaryTerm(term: "Short", definition: "A position that profits when price goes down."),
         GlossaryTerm(term: "Spot", definition: "Buying or selling the real asset for immediate delivery."),

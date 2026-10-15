@@ -83,6 +83,18 @@ struct Position: Identifiable {
     }
 }
 
+/// A finished trade, kept for the history list.
+struct ClosedTrade: Identifiable, Codable {
+    var id = UUID()
+    let title: String
+    let pnl: Double
+    let margin: Double
+    let reason: String
+    let date: Date
+
+    var returnRatio: Double { margin > 0 ? pnl / margin : 0 }
+}
+
 /// A fake market for a made up coin called TDC. Prices follow a random walk.
 final class MarketSim: ObservableObject {
     static let startingCash = 10_000.0
@@ -93,6 +105,8 @@ final class MarketSim: ObservableObject {
     static let maintenanceRatio = 0.1
     static let futureCarryPerTick = 0.0004
     private static let cashKey = "trador.market.cash"
+    private static let tradesKey = "trador.market.trades"
+    static let maxSavedTrades = 100
 
     @Published private(set) var tick = 0
     @Published private(set) var history: [Double] = []
@@ -100,6 +114,7 @@ final class MarketSim: ObservableObject {
     @Published private(set) var positions: [Position] = []
     @Published private(set) var fundingRate = 0.0003
     @Published private(set) var realizedPnL = 0.0
+    @Published private(set) var closedTrades: [ClosedTrade] = []
     @Published var banner: String?
 
     /// Called with a mission id when the player does something a mission asks for.
@@ -117,6 +132,40 @@ final class MarketSim: ObservableObject {
             start.append(price)
         }
         history = start
+        if let data = UserDefaults.standard.data(forKey: Self.tradesKey),
+           let saved = try? JSONDecoder().decode([ClosedTrade].self, from: data) {
+            closedTrades = saved
+        }
+    }
+
+    // MARK: Stats
+
+    var winRate: Double {
+        guard !closedTrades.isEmpty else { return 0 }
+        return Double(closedTrades.filter { $0.pnl > 0 }.count) / Double(closedTrades.count)
+    }
+
+    var bestTrade: ClosedTrade? { closedTrades.max { $0.pnl < $1.pnl } }
+
+    /// Wins in a row, counting back from the latest trade.
+    var winStreak: Int {
+        var count = 0
+        for trade in closedTrades {
+            guard trade.pnl > 0 else { break }
+            count += 1
+        }
+        return count
+    }
+
+    private func record(_ position: Position, pnl: Double, reason: String) {
+        let trade = ClosedTrade(title: position.title, pnl: pnl, margin: position.margin, reason: reason, date: Date())
+        closedTrades.insert(trade, at: 0)
+        if closedTrades.count > Self.maxSavedTrades {
+            closedTrades.removeLast(closedTrades.count - Self.maxSavedTrades)
+        }
+        if let data = try? JSONEncoder().encode(closedTrades) {
+            UserDefaults.standard.set(data, forKey: Self.tradesKey)
+        }
     }
 
     var price: Double { history.last ?? 100 }
@@ -229,6 +278,18 @@ final class MarketSim: ObservableObject {
         saveCash()
         banner = "Opened \(position.title)"
         onMission?("first_trade")
+        checkHedges()
+    }
+
+    /// Hedging missions: a spot coin protected by a put, or by a short future or perp.
+    private func checkHedges() {
+        guard positions.contains(where: { $0.kind == .spot }) else { return }
+        if positions.contains(where: { $0.kind == .option && $0.optionType == .put }) {
+            onMission?("hedge_put")
+        }
+        if positions.contains(where: { $0.isLeveraged && $0.side == .short }) {
+            onMission?("hedge_short")
+        }
     }
 
     func close(_ id: UUID) {
@@ -244,7 +305,9 @@ final class MarketSim: ObservableObject {
         realizedPnL += payout - position.margin
         positions.remove(at: index)
         saveCash()
-        banner = "\(reason) \(position.title): \(Fmt.signedMoney(payout - position.margin))"
+        record(position, pnl: payout - position.margin, reason: reason)
+        let streakNote = winStreak >= 2 ? "  |  \(winStreak) wins in a row!" : ""
+        banner = "\(reason) \(position.title): \(Fmt.signedMoney(payout - position.margin))\(streakNote)"
 
         if position.kind == .future && reason == "Settled" {
             onMission?("future_expiry")
@@ -308,6 +371,7 @@ final class MarketSim: ObservableObject {
         for position in liquidated {
             positions.removeAll { $0.id == position.id }
             realizedPnL -= position.margin
+            record(position, pnl: -position.margin, reason: "Liquidated")
             banner = "Liquidated! \(position.title) lost \(Fmt.money(position.margin))"
         }
     }
@@ -316,6 +380,8 @@ final class MarketSim: ObservableObject {
         cash = Self.startingCash
         positions = []
         realizedPnL = 0
+        closedTrades = []
+        UserDefaults.standard.removeObject(forKey: Self.tradesKey)
         saveCash()
         banner = "Account reset to \(Fmt.money(Self.startingCash))"
     }

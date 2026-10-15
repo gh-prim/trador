@@ -4,14 +4,29 @@ A beginner friendly iOS game to learn trading, options, futures, perpetuals (per
 
 ## What is inside
 
-- **Learn**: 5 modules, 17 short lessons. Each lesson has swipe cards and a 3 question quiz. Pass a lesson (2 of 3 right) to unlock the next one.
+- **Learn**: 7 modules, 27 short lessons. Each lesson has swipe cards and a 3 question quiz. Pass a lesson (2 of 3 right) to unlock the next one.
   1. Trading Basics
   2. Derivatives 101
   3. Options
   4. Futures
   5. Perpetuals
+  6. Hedging Strategies (protective put, covered call, collar, delta neutral, cash and carry, pairs)
+  7. Market History (from Mesopotamia to FTX)
 - **Trade**: a fake market for a made up coin (TDC) with $10,000 of fake money. Trade spot, buy calls and puts, go long or short on futures and perps with leverage. Funding, expiry and liquidation all work like the real thing, just simplified.
-- **Missions**: 8 trading challenges that give XP.
+- **Trade history**: every closed trade with P&L, win rate and win streak.
+- **Missions**: 13 challenges that give XP, including hedging missions.
+
+## Why it is addictive
+
+Built on the dopamine triggers used in games:
+
+- **Variable rewards**: a mystery chest (Common, Rare, Epic, Legendary) after each new lesson and Daily Challenge. Unpredictable rewards hit hardest.
+- **Streaks and loss aversion**: daily streak with a "play today or lose it" warning. Epic chests give streak freezes.
+- **Daily Challenge**: 5 questions a day with combo bonuses.
+- **Goal gradient**: daily XP ring, level bar and a "Continue" card that always shows the next step.
+- **Combos**: "3 in a row" flame during quizzes.
+- **Near misses**: "So close! Just 1 more right answer" when you fail by one.
+- **Juice**: haptics, confetti and a level up screen.
 - **Glossary**: searchable list of key terms.
 - **Profile**: level, XP, stats, missions.
 

@@ -23,6 +23,14 @@ struct RootView: View {
                     .onTapGesture { market.banner = nil }
             }
         }
+        .overlay {
+            if let level = progress.levelUp {
+                LevelUpView(level: level) {
+                    withAnimation { progress.levelUp = nil }
+                }
+                .transition(.opacity)
+            }
+        }
         .animation(.spring(duration: 0.3), value: market.banner)
         .onChange(of: market.banner) { _, newValue in
             guard let shown = newValue else { return }

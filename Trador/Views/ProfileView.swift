@@ -17,6 +17,10 @@ struct ProfileView: View {
                     statRow("Lessons done", "\(progress.completedLessons.count)/\(Curriculum.lessonCount)")
                     statRow("Missions done", "\(progress.completedMissions.count)/\(Missions.all.count)")
                     statRow("Total XP", "\(progress.xp)")
+                    statRow("Current streak", "\(progress.currentStreak) days")
+                    statRow("Best streak", "\(progress.bestStreak) days")
+                    statRow("Streak freezes", "\(progress.streakFreezes)")
+                    statRow("Chests opened", "\(progress.chestsOpened)")
                 }
 
                 Section {

@@ -15,6 +15,7 @@ struct LessonView: View {
     @State private var questionIndex = 0
     @State private var selected: Int?
     @State private var correctCount = 0
+    @State private var combo = 0
     @State private var earnedXP = 0
     @State private var passed = false
 
@@ -102,61 +103,24 @@ struct LessonView: View {
     // MARK: Quiz
 
     private var quizView: some View {
-        let question = lesson.quiz[questionIndex]
-        return VStack(alignment: .leading, spacing: 16) {
-            Text("Question \(questionIndex + 1) of \(lesson.quiz.count)")
-                .font(.caption.bold())
-                .foregroundStyle(.secondary)
-            Text(question.prompt)
-                .font(.title3.bold())
-                .fixedSize(horizontal: false, vertical: true)
-
-            ForEach(question.options.indices, id: \.self) { index in
-                Button {
-                    guard selected == nil else { return }
-                    selected = index
-                    if index == question.answer { correctCount += 1 }
-                } label: {
-                    HStack {
-                        Text(question.options[index])
-                            .multilineTextAlignment(.leading)
-                            .foregroundStyle(Color.primary)
-                        Spacer()
-                        if let choice = selected {
-                            if index == question.answer {
-                                Image(systemName: "checkmark.circle.fill").foregroundStyle(Color.green)
-                            } else if index == choice {
-                                Image(systemName: "xmark.circle.fill").foregroundStyle(Color.red)
-                            }
-                        }
+        VStack(spacing: 16) {
+            ScrollView {
+                QuizCard(
+                    question: lesson.quiz[questionIndex],
+                    number: questionIndex + 1,
+                    total: lesson.quiz.count,
+                    color: color,
+                    combo: combo,
+                    selected: $selected
+                ) { right in
+                    if right {
+                        correctCount += 1
+                        combo += 1
+                    } else {
+                        combo = 0
                     }
-                    .padding()
-                    .frame(maxWidth: .infinity, alignment: .leading)
-                    .background(
-                        RoundedRectangle(cornerRadius: 12)
-                            .fill(optionBackground(index: index, answer: question.answer))
-                    )
                 }
-                .buttonStyle(.plain)
             }
-
-            if let choice = selected {
-                let right = choice == question.answer
-                VStack(alignment: .leading, spacing: 6) {
-                    Text(right ? "Correct!" : "Not quite")
-                        .font(.headline)
-                        .foregroundStyle(right ? Color.green : Color.red)
-                    Text(question.explanation)
-                        .font(.subheadline)
-                        .fixedSize(horizontal: false, vertical: true)
-                }
-                .padding()
-                .frame(maxWidth: .infinity, alignment: .leading)
-                .background(RoundedRectangle(cornerRadius: 12).fill(Color(.secondarySystemGroupedBackground)))
-            }
-
-            Spacer()
-
             Button {
                 nextQuestion()
             } label: {
@@ -172,13 +136,6 @@ struct LessonView: View {
         .padding(24)
         .id("question\(questionIndex)")
         .transition(.asymmetric(insertion: .move(edge: .trailing), removal: .opacity))
-    }
-
-    private func optionBackground(index: Int, answer: Int) -> Color {
-        guard let choice = selected else { return Color(.secondarySystemGroupedBackground) }
-        if index == answer { return Color.green.opacity(0.2) }
-        if index == choice { return Color.red.opacity(0.2) }
-        return Color(.secondarySystemGroupedBackground)
     }
 
     private func nextQuestion() {
@@ -212,10 +169,14 @@ struct LessonView: View {
                 .font(.title2.bold())
                 .foregroundStyle(Color.orange)
             if !passed {
-                Text("Get at least \(Int((Double(lesson.quiz.count) * ProgressStore.passRatio).rounded(.up))) right to unlock the next lesson.")
+                let needed = Int((Double(lesson.quiz.count) * ProgressStore.passRatio).rounded(.up))
+                Text(needed - correctCount == 1 ? "So close! Just 1 more right answer unlocks the next lesson." : "Get at least \(needed) right to unlock the next lesson.")
                     .font(.subheadline)
                     .multilineTextAlignment(.center)
                     .foregroundStyle(.secondary)
+            }
+            if passed && earnedXP >= ProgressStore.lessonBonusXP {
+                ChestView()
             }
             Spacer()
             VStack(spacing: 12) {
@@ -243,6 +204,13 @@ struct LessonView: View {
             }
         }
         .padding(24)
+        .overlay {
+            if passed {
+                ConfettiView()
+                    .ignoresSafeArea()
+                    .allowsHitTesting(false)
+            }
+        }
         .transition(.opacity)
     }
 
@@ -253,6 +221,7 @@ struct LessonView: View {
             questionIndex = 0
             selected = nil
             correctCount = 0
+            combo = 0
             earnedXP = 0
             passed = false
         }

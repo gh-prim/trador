@@ -25,6 +25,7 @@ struct TradingFloorView: View {
                     chartCard
                     orderTicket
                     positionsCard
+                    historyCard
                 }
                 .padding()
             }
@@ -319,6 +320,68 @@ struct TradingFloorView: View {
         }
         .padding()
         .background(RoundedRectangle(cornerRadius: 16).fill(Color(.secondarySystemGroupedBackground)))
+    }
+}
+
+extension TradingFloorView {
+    private var historyCard: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            Text("Trade history")
+                .font(.headline)
+            if market.closedTrades.isEmpty {
+                Text("Your closed trades show up here with their profit or loss.")
+                    .font(.footnote)
+                    .foregroundStyle(.secondary)
+            } else {
+                HStack {
+                    statBox("Trades", "\(market.closedTrades.count)")
+                    statBox("Win rate", String(format: "%.0f%%", market.winRate * 100))
+                    statBox("Win streak", "\(market.winStreak)")
+                }
+                if let best = market.bestTrade, best.pnl > 0 {
+                    Text("Best trade: \(best.title) \(Fmt.signedMoney(best.pnl))")
+                        .font(.caption.bold())
+                        .foregroundStyle(Color.green)
+                }
+                ForEach(market.closedTrades.prefix(15)) { trade in
+                    HStack {
+                        Image(systemName: trade.pnl > 0 ? "arrow.up.right.circle.fill" : "arrow.down.right.circle.fill")
+                            .foregroundStyle(trade.pnl > 0 ? Color.green : Color.red)
+                        VStack(alignment: .leading, spacing: 1) {
+                            Text(trade.title)
+                                .font(.subheadline.bold())
+                            Text("\(trade.reason) \(trade.date.formatted(date: .omitted, time: .shortened))")
+                                .font(.caption)
+                                .foregroundStyle(.secondary)
+                        }
+                        Spacer()
+                        VStack(alignment: .trailing, spacing: 1) {
+                            Text(Fmt.signedMoney(trade.pnl))
+                                .font(.subheadline.bold().monospacedDigit())
+                                .foregroundStyle(trade.pnl > 0 ? Color.green : Color.red)
+                            Text(Fmt.percent(trade.returnRatio))
+                                .font(.caption.monospacedDigit())
+                                .foregroundStyle(.secondary)
+                        }
+                    }
+                }
+            }
+        }
+        .padding()
+        .background(RoundedRectangle(cornerRadius: 16).fill(Color(.secondarySystemGroupedBackground)))
+    }
+
+    private func statBox(_ label: String, _ value: String) -> some View {
+        VStack(spacing: 2) {
+            Text(value)
+                .font(.title3.bold().monospacedDigit())
+            Text(label)
+                .font(.caption)
+                .foregroundStyle(.secondary)
+        }
+        .frame(maxWidth: .infinity)
+        .padding(.vertical, 8)
+        .background(RoundedRectangle(cornerRadius: 10).fill(Color(.tertiarySystemGroupedBackground)))
     }
 }
 

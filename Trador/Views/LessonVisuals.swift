@@ -181,7 +181,7 @@ struct OrderBookVisual: View {
 
     private func row(price: Double, size: Double, color: Color, best: Bool) -> some View {
         HStack(spacing: 8) {
-            Text(String(format: "%.2f", price))
+            Text(String(format: "%.2f", price).replacingOccurrences(of: ".", with: ","))
                 .font(.caption.monospacedDigit().bold())
                 .frame(width: 52, alignment: .leading)
             GeometryReader { geo in
